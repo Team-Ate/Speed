@@ -49,8 +49,11 @@ public class PhysicsSprite extends Sprite {
         fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
+        fixtureDef.friction = 0f;
 
         fixture = body.createFixture(fixtureDef);
+        
+        setOrigin(0.5f, 0.5f);
 	}
 	
 	// ----------------------------------------

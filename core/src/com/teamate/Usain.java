@@ -10,10 +10,12 @@ public class Usain extends PhysicsSprite {
 	
 	public Usain(String image, World world) {
 		super(image, world);
+		scale(8);
 	}
 	
 	public Usain(Texture tex, World world) {
 		super(tex, world);
+		scale(8);
 	}
 	
 	public boolean isJumping() {
@@ -23,7 +25,7 @@ public class Usain extends PhysicsSprite {
 	public void jump() {
 		if (!jumping) {
 			jumping = true;
-			applyImpulse(new Vector2(0, 1000));
+			applyImpulse(new Vector2(0, 13));
 		}
 	}
 	

@@ -7,11 +7,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 
@@ -25,6 +27,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 
 	Usain usain;
 	PhysicsSprite ground;
+	Body leftWall;
 	
 	@Override
 	public void create() {
@@ -34,16 +37,26 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		int w = Gdx.graphics.getWidth();
 		int h = Gdx.graphics.getHeight();
 		
-		usain = new Usain("badlogic.jpg", world);
-		usain.setPosition(Gdx.graphics.getWidth() / 6, Gdx.graphics.getHeight() / 2);
-		
-		ground = new PhysicsSprite("badlogic.jpg", world);
-		ground.setSize(w, ground.getHeight() / 2);
-		ground.setPosition(-w/2, 0);
+		ground = new PhysicsSprite("floor.png", world);
+		ground.setSize(w, ground.getHeight() / 6);
+		ground.setPosition(-w/2, -ground.getHeight()/2);
 		ground.setBodyType(BodyType.StaticBody);
 		EdgeShape edgeShape = new EdgeShape();
 		edgeShape.set(0, 0, w, 0);
 		ground.setShape(edgeShape);
+		
+		usain = new Usain("sprite_robot1.png", world);
+		usain.setPosition(Gdx.graphics.getWidth() / 6, Gdx.graphics.getHeight() / 2);
+		
+		BodyDef leftDef = new BodyDef();
+		leftDef.type = BodyDef.BodyType.StaticBody;
+		leftWall = world.createBody(leftDef);
+		
+		FixtureDef leftFixDef = new FixtureDef();
+		EdgeShape leftShape = new EdgeShape();
+		leftShape.set(new Vector2(0, 0), new Vector2(0, h));
+		leftFixDef.shape = leftShape;
+		leftWall.createFixture(leftFixDef);
 		
 		Gdx.input.setInputProcessor(this);
 		world.setContactListener(this);
@@ -63,8 +76,8 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		usain.draw(batch);
 		ground.draw(batch);
+		usain.draw(batch);
 		batch.end();
 	}
 	
@@ -129,8 +142,10 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Body a = contact.getFixtureA().getBody();
 		Body b = contact.getFixtureB().getBody();
 		
-		if (usain.isJumping() && (a == usain.getBody() || b== usain.getBody())) {
+		if (usain.isJumping() && (a == usain.getBody() || b == usain.getBody())) {
 			usain.notifyLanded();
+		} else if (a == usain.getBody() && b == leftWall || a == leftWall && b == usain.getBody()) {
+			Gdx.app.log("Contact", "Usain collided with the left wall");
 		}
 	}
 
