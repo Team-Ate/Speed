@@ -5,6 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -40,7 +43,12 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 
 	Usain usain;
 	PhysicsSprite ground;
+	Texture texture;
+	Texture texture2; // TODO: Get rid of once combo of floor+wall
+	Sprite wall;
+	Sprite movingFloor; // TODO: Get rid of once combo of floor+wall
 	Body leftWall;
+	float scrollTimer = 0;
 	
 	@Override
 	public void create() {
@@ -65,6 +73,23 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		edgeShape.set(-ground.getWidth() / 2, 0, ground.getWidth() / 2, 0);
 		ground.setShape(edgeShape);
 		
+		
+		// TODO: Combine the floor texture and the wall texture to create one congruent
+		// scrolling picture. Will be better for performance and be easier to deal with
+		// scrolling. @Michael should be able to photoshop floor and wall together quick.
+		texture = new Texture("wall.png");
+		texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
+		wall = new Sprite(texture);
+		wall.setSize(WORLD_WIDTH + 2, WORLD_HEIGHT);
+		wall.setPosition(0, 0);
+		
+		// TODO: Once combined, get rid of this block. 
+		texture2 = new Texture("floor.png"); 
+		texture2.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
+		movingFloor = new Sprite(texture2);
+		movingFloor.setSize(WORLD_WIDTH, WORLD_HEIGHT / 6);
+		movingFloor.setPosition(0, 0);
+	
 		usain = new Usain("sprite_robot1.png", world);
 		usain.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
 		usain.setPosition(WORLD_WIDTH / 6, WORLD_HEIGHT / 2);
@@ -87,7 +112,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	public void render() {
 		camera.update();
 		world.step(1f/60f, 6, 2);
-		
 		usain.update();
 		ground.update();
 				
@@ -98,7 +122,14 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Matrix4 debugMatrix = batch.getProjectionMatrix();
 				
 		batch.begin();
-		ground.draw(batch);
+		scrollTimer += 0.0047f;  // More time = faster scroll
+		if (scrollTimer > 1.0f) scrollTimer = 0.0f; // Reset the timer so we scroll again
+		wall.setU(scrollTimer); // Set up the next scroll rotation for the background.
+		movingFloor.setU(scrollTimer); // TODO: Get rid of once combo of floor+wall
+		wall.setU2(scrollTimer+1); // Set up the next scroll rotation for the background.
+		movingFloor.setU2(scrollTimer); // TODO: Get rid of once combo of floor+wall
+		wall.draw(batch); // Finally draw the wall. 
+		movingFloor.draw(batch); // Finally draw the ground. 
 		usain.draw(batch);
 		batch.end();
 		
