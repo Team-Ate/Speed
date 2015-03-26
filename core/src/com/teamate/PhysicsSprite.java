@@ -44,7 +44,7 @@ public class PhysicsSprite extends Sprite {
 		// Create a fixture shape
         PolygonShape shape = new PolygonShape();
         // Strangely uses half the width/height of the box
-        shape.setAsBox((getWidth() / 2) / Speed.PixelsPerMeter, (getHeight() / 2) / Speed.PixelsPerMeter);
+        shape.setAsBox(getWidth() / 2, getHeight() / 2);
 
         fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
@@ -65,6 +65,15 @@ public class PhysicsSprite extends Sprite {
 		setPosition(x, y, true);
 	}
 	
+	@Override
+	public void setSize(float width, float height) {
+		super.setSize(width, height);
+		PolygonShape shape = new PolygonShape();
+        // Strangely uses half the width/height of the box
+        shape.setAsBox(getWidth() / 2, getHeight() / 2);
+        setShape(shape);
+	}
+	
 	// ----------------------------------------
 	// Updating things
 	// ----------------------------------------
@@ -74,14 +83,14 @@ public class PhysicsSprite extends Sprite {
 		if (adjustBody) {
 			body.destroyFixture(fixture);
 			world.destroyBody(body);
-			bodyDef.position.set((x + getWidth() / 2) / Speed.PixelsPerMeter, (y + getHeight() / 2) / Speed.PixelsPerMeter);
+			bodyDef.position.set(x, y);
 			body = world.createBody(bodyDef);
 			fixture = body.createFixture(fixtureDef);
 		}
 	}
 	
 	public void update() {
-		setPosition(body.getPosition().x * Speed.PixelsPerMeter, body.getPosition().y * Speed.PixelsPerMeter, false);
+		setPosition(body.getPosition().x - getWidth() / 2, body.getPosition().y - getHeight() / 2, false);
 		setRotation((float)Math.toDegrees(body.getAngle()));
 	}
 	
@@ -120,9 +129,11 @@ public class PhysicsSprite extends Sprite {
 	// ----------------------------------------
 	
 	public void setShape(Shape shape) {
-		body.destroyFixture(fixture);
-		fixtureDef.shape = shape;
-		fixture = body.createFixture(fixtureDef);
+		if (body != null) {
+			body.destroyFixture(fixture);
+			fixtureDef.shape = shape;
+			fixture = body.createFixture(fixtureDef);
+		}
 	}
 	
 	public void setDensity(float density) {
