@@ -6,14 +6,10 @@ import java.util.List;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.Texture.TextureWrap;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -45,22 +41,21 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	Body ground;
 	Body leftWall;
 	
-	Boolean flag = true;
-//	Sound jumpsound;
-//	Sound landsound;
-//	Sound main;
-	
 	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
+	
+	int totScore;
 	
 	@Override
 	public void create() {
 		
 		gameWorld = new GameWorld();
-
-//		jumpsound =  Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
-//		landsound =  Gdx.audio.newSound(Gdx.files.internal("land.wav"));
-//		main =  Gdx.audio.newSound(Gdx.files.internal("main.wav"));
-//		music();
+		
+		// Music starts to play here. Import different sounds for background track.
+		// DONT use this for in game sounds. Music is strictly for music and very
+		// resource intensive.
+		Music music = Gdx.audio.newMusic(Gdx.files.internal("loop.wav"));
+		music.play();
+		music.setLooping(true);
 	
 		usain = new Usain("sprite_robot1.png", gameWorld.getWorld());
 		usain.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
@@ -107,15 +102,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		
 		ground = gameWorld.addBody(groundDef, groundFixDef);
 	}
-	
-	public void music(){
-		try {
-		    Thread.sleep(10000);                 
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-//		main.loop();
-	}
 
 	@Override
 	public void render() {
@@ -133,8 +119,9 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		}
 		
 		gameWorld.update();
-		
 		gameWorld.render();
+
+		totScore++;
 	}
 	
 	@Override
@@ -166,11 +153,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(flag == true){
-//		jumpsound.play();
-		}
 		usain.jump();
-		flag = false;
 		return true;
 	}
 
@@ -208,8 +191,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Body b = contact.getFixtureB().getBody();
 		
 		if (usain.isJumping() && (a == usain.getBody() || b == usain.getBody())) {
-//			landsound.play();
-			flag = true;
 			usain.notifyLanded();
 		} else if (a == usain.getBody() && b == leftWall || a == leftWall && b == usain.getBody()) {
 			Gdx.app.log("Contact", "Usain collided with the left wall");

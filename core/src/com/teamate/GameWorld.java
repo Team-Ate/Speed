@@ -79,7 +79,9 @@ public class GameWorld {
 		}
 		
 		scrollTimer += 0.0047f;	// More time = faster scroll
-		if (scrollTimer > 1f) scrollTimer = 0f;
+		if (scrollTimer > 1f) {
+			scrollTimer = 0f;
+		}
 		wall.setU(scrollTimer);
 		movingFloor.setU(scrollTimer);
 		wall.setU2(scrollTimer + 1);
