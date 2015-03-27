@@ -1,114 +1,120 @@
 package com.teamate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class Speed extends ApplicationAdapter implements InputProcessor, ContactListener {
 	
-	private static final boolean DEBUG_PHYSICS = false;
+	public static final boolean DEBUG_PHYSICS = true;
+	
+	public static final short PHYSICS_CATEGORY_LEFT_WALL = 1;
+	public static final short PHYSICS_CATEGORY_GROUND = 2;
+	public static final short PHYSICS_CATEGORY_USAIN = 4;
+	public static final short PHYSICS_CATEGORY_OBSTACLE = 8;
 	
 	public static final float WORLD_WIDTH = 8; // m
 	public static final float WORLD_HEIGHT = 4.5f; // m
+	public static final float WORLD_GRAVITY = -25;
 	
-	private Viewport viewport;
-	private OrthographicCamera camera;
+	public static final float USAIN_X = WORLD_WIDTH / 3;
 	
-	Box2DDebugRenderer debugRenderer;
+	boolean usainCollidingWithObstacle = false;
 	
-	SpriteBatch batch;
-	
-	World world;
+	GameWorld gameWorld;
 
 	Usain usain;
 	PhysicsSprite ground;
 	Body leftWall;
 	
+	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
+	
 	@Override
 	public void create() {
 		
-		camera = new OrthographicCamera();
-		viewport = new FillViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
-		viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		viewport.apply();
+		gameWorld = new GameWorld();
 		
-		camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-		
-		debugRenderer = new Box2DDebugRenderer();
-		
-		batch = new SpriteBatch();
-		world = new World(new Vector2(0, -25), true);
-		
-		ground = new PhysicsSprite("floor.png", world);
+		ground = new PhysicsSprite("floor.png", gameWorld.getWorld());
 		ground.setSize(WORLD_WIDTH, WORLD_HEIGHT / 6);
 		ground.setPosition(WORLD_WIDTH / 2, ground.getHeight() / 2);
 		ground.setBodyType(BodyType.StaticBody);
+		ground.setFriction(0);
 		EdgeShape edgeShape = new EdgeShape();
 		edgeShape.set(-ground.getWidth() / 2, 0, ground.getWidth() / 2, 0);
 		ground.setShape(edgeShape);
+		ground.setFilterCategory(PHYSICS_CATEGORY_GROUND);
+		ground.setFilterCollisionMask((short) (PHYSICS_CATEGORY_USAIN | PHYSICS_CATEGORY_OBSTACLE));
 		
-		usain = new Usain("sprite_robot1.png", world);
+		gameWorld.addSprite(ground);
+		
+		usain = new Usain("sprite_robot1.png", gameWorld.getWorld());
 		usain.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
-		usain.setPosition(WORLD_WIDTH / 6, WORLD_HEIGHT / 2);
+		usain.setPosition(USAIN_X + usain.getWidth() / 2, ground.getHeight() / 2 + usain.getHeight() / 2);
+		usain.setFilterCategory(PHYSICS_CATEGORY_USAIN);
+		usain.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_OBSTACLE | PHYSICS_CATEGORY_LEFT_WALL));
 		
+		gameWorld.addSprite(usain);
+		
+		// Add a block
+		PhysicsSprite block = new PhysicsSprite("box.png", gameWorld.getWorld());
+		block.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
+		block.setPosition(3 * WORLD_WIDTH / 4, ground.getHeight() / 2 + block.getHeight() / 2);
+		block.setFilterCategory(PHYSICS_CATEGORY_OBSTACLE);
+		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
+		obstacles.add(block);
+		gameWorld.addSprite(block);
+		
+		// Add the left "wall"
 		BodyDef leftDef = new BodyDef();
 		leftDef.type = BodyDef.BodyType.StaticBody;
-		leftWall = world.createBody(leftDef);
 		
 		FixtureDef leftFixDef = new FixtureDef();
 		EdgeShape leftShape = new EdgeShape();
 		leftShape.set(WORLD_WIDTH / 30, WORLD_HEIGHT, WORLD_WIDTH / 30, 0);
 		leftFixDef.shape = leftShape;
-		leftWall.createFixture(leftFixDef);
+		leftFixDef.filter.categoryBits = PHYSICS_CATEGORY_LEFT_WALL;
+		
+		leftWall = gameWorld.addBody(leftDef, leftFixDef);
 		
 		Gdx.input.setInputProcessor(this);
-		world.setContactListener(this);
+		gameWorld.getWorld().setContactListener(this);
 	}
 
 	@Override
 	public void render() {
-		camera.update();
-		world.step(1f/60f, 6, 2);
 		
-		usain.update();
-		ground.update();
-				
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		for (PhysicsSprite obstacle : obstacles) {
+			obstacle.applyImpulse(new Vector2(-0.05f, 0));
+		}
 		
-		batch.setProjectionMatrix(camera.combined);
-		Matrix4 debugMatrix = batch.getProjectionMatrix();
-				
-		batch.begin();
-		ground.draw(batch);
-		usain.draw(batch);
-		batch.end();
+		if (!usainCollidingWithObstacle) {
+			if (usain.getX() < USAIN_X - 0.05f) {
+				usain.setLinearVelocity(1, usain.getBody().getLinearVelocity().y);
+			} else if (usain.getX() > USAIN_X + 0.05f) {
+				usain.setLinearVelocity(0, usain.getBody().getLinearVelocity().y);
+			}
+		}
 		
-		if (DEBUG_PHYSICS) debugRenderer.render(world, debugMatrix);
+		gameWorld.update();
+		gameWorld.render();
 	}
 	
 	@Override
 	public void resize(int width, int height) {
-		viewport.update(width, height);
-		camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
+		gameWorld.resize(width, height);
 	}
 	
 	// ----------------------------------------
@@ -178,12 +184,40 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 			Gdx.app.log("Contact", "Usain collided with the left wall");
 			Gdx.app.exit();
 		}
-	}
+		
+		if (a == usain.getBody()) {
+			for (PhysicsSprite obstacle : obstacles) {
+				if (b == obstacle.getBody()) {
+					usainCollidingWithObstacle = true;
+				}
+			}
+		} else if (b == usain.getBody()) {
+			for (PhysicsSprite obstacle : obstacles) {
+				if (a == obstacle.getBody()) {
+					usainCollidingWithObstacle = true;
+				}
+			}
+		}
+	} 
 
 	@Override
 	public void endContact(Contact contact) {
-		// TODO Auto-generated method stub
+		Body a = contact.getFixtureA().getBody();
+		Body b = contact.getFixtureB().getBody();
 		
+		if (a == usain.getBody()) {
+			for (PhysicsSprite obstacle : obstacles) {
+				if (b == obstacle.getBody()) {
+					usainCollidingWithObstacle = false;
+				}
+			}
+		} else if (b == usain.getBody()) {
+			for (PhysicsSprite obstacle : obstacles) {
+				if (a == obstacle.getBody()) {
+					usainCollidingWithObstacle = false;
+				}
+			}
+		}
 	}
 
 	@Override

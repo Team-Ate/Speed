@@ -39,6 +39,7 @@ public class PhysicsSprite extends Sprite {
 		// Set up the physics body
 		this.bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		bodyDef.fixedRotation = true;
 		body = world.createBody(bodyDef);
 		
 		// Create a fixture shape
@@ -124,6 +125,10 @@ public class PhysicsSprite extends Sprite {
 		body.applyLinearImpulse(impulse, bodyDef.position, true);
 	}
 	
+	public void setLinearVelocity(float x, float y) {
+		body.setLinearVelocity(x, y);
+	}
+	
 	// ----------------------------------------
 	// Wrapper methods for FixtureDef
 	// ----------------------------------------
@@ -142,10 +147,28 @@ public class PhysicsSprite extends Sprite {
 		fixture = body.createFixture(fixtureDef);
 	}
 	
+	public void setFriction(float friction) {
+		body.destroyFixture(fixture);
+		fixtureDef.friction = friction;
+		fixture = body.createFixture(fixtureDef);
+	}
+	
 	public void setRestitution(float restitution) {
 		body.destroyFixture(fixture);
 		fixtureDef.restitution = restitution;
 		fixture = body.createFixture(fixtureDef);
 	}
+	
+	public void setFilterCategory(short cat) {
+		body.destroyFixture(fixture);
+		fixtureDef.filter.categoryBits = cat;
+		fixture = body.createFixture(fixtureDef);
+	}
 
+	public void setFilterCollisionMask(short mask) {
+		body.destroyFixture(fixture);
+		fixtureDef.filter.maskBits = mask;
+		fixture = body.createFixture(fixtureDef);
+	}
+	
 }
