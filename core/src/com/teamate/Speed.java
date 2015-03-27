@@ -3,12 +3,16 @@ package com.teamate;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -44,24 +48,16 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	Usain usain;
 	PhysicsSprite ground;
 	Texture texture;
-	Texture texture2; // TODO: Get rid of once combo of floor+wall
 	Sprite wall;
-	Sprite movingFloor; // TODO: Get rid of once combo of floor+wall
 	Body leftWall;
+	Sound sound;
 	float scrollTimer = 0;
-	
-	Boolean flag = true;
-	Sound jumpsound;
-	Sound landsound;
-	Sound main;
+	int totScore;
+	TextureAtlas textureAtlas;
+	BitmapFont font;
 	
 	@Override
 	public void create() {
-		
-		jumpsound =  Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
-		landsound =  Gdx.audio.newSound(Gdx.files.internal("land.wav"));
-		main =  Gdx.audio.newSound(Gdx.files.internal("main.wav"));
-		music();
 		
 		camera = new OrthographicCamera();
 		viewport = new FillViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
@@ -75,6 +71,17 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, -25), true);
 		
+		// Music starts to play here. Import different sounds for background track.
+		// DONT use this for in game sounds. Music is strictly for music and very
+		// resource intensive.
+		Music music = Gdx.audio.newMusic(Gdx.files.internal("loop.wav"));
+		music.play();
+		music.setLooping(true);
+		
+		//textureAtlas = new TextureAtlas("data/main");
+		//font = new BitmapFont(Gdx.files.internal("data/calibri.fnt"),
+		         //textureAtlas.findRegion("calibri"), false);
+		
 		ground = new PhysicsSprite("floor.png", world);
 		ground.setSize(WORLD_WIDTH, WORLD_HEIGHT / 6);
 		ground.setPosition(WORLD_WIDTH / 2, ground.getHeight() / 2);
@@ -82,7 +89,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		EdgeShape edgeShape = new EdgeShape();
 		edgeShape.set(-ground.getWidth() / 2, 0, ground.getWidth() / 2, 0);
 		ground.setShape(edgeShape);
-		
 		
 		// TODO: Combine the floor texture and the wall texture to create one congruent
 		// scrolling picture. Will be better for performance and be easier to deal with
@@ -92,13 +98,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		wall = new Sprite(texture);
 		wall.setSize(WORLD_WIDTH + 2, WORLD_HEIGHT);
 		wall.setPosition(0, 0);
-		
-		// TODO: Once combined, get rid of this block. 
-		texture2 = new Texture("floor.png"); 
-		texture2.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-		movingFloor = new Sprite(texture2);
-		movingFloor.setSize(WORLD_WIDTH, WORLD_HEIGHT / 6);
-		movingFloor.setPosition(0, 0);
 	
 		usain = new Usain("sprite_robot1.png", world);
 		usain.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
@@ -117,15 +116,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Gdx.input.setInputProcessor(this);
 		world.setContactListener(this);
 	}
-	
-	public void music(){
-		try {
-		    Thread.sleep(10000);                 
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		main.loop();
-	}
 
 	@Override
 	public void render() {
@@ -142,16 +132,17 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 				
 		batch.begin();
 		scrollTimer += 0.0047f;  // More time = faster scroll
-		if (scrollTimer > 1.0f) scrollTimer = 0.0f; // Reset the timer so we scroll again
+		if (scrollTimer > 1.0f){
+			scrollTimer = 0.0f;
+			totScore++;
+		}// Reset the timer so we scroll again
 		wall.setU(scrollTimer); // Set up the next scroll rotation for the background.
-		movingFloor.setU(scrollTimer); // TODO: Get rid of once combo of floor+wall
 		wall.setU2(scrollTimer+1); // Set up the next scroll rotation for the background.
-		movingFloor.setU2(scrollTimer); // TODO: Get rid of once combo of floor+wall
 		wall.draw(batch); // Finally draw the wall. 
-		movingFloor.draw(batch); // Finally draw the ground. 
 		usain.draw(batch);
+		//font.draw(batch, "score: " + totScore, 0, 0);
 		batch.end();
-		
+
 		if (DEBUG_PHYSICS) debugRenderer.render(world, debugMatrix);
 	}
 	
@@ -185,11 +176,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if(flag == true){
-		jumpsound.play();
-		}
 		usain.jump();
-		flag = false;
 		return true;
 	}
 
@@ -227,8 +214,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Body b = contact.getFixtureB().getBody();
 		
 		if (usain.isJumping() && (a == usain.getBody() || b == usain.getBody())) {
-			landsound.play();
-			flag = true;
 			usain.notifyLanded();
 		} else if (a == usain.getBody() && b == leftWall || a == leftWall && b == usain.getBody()) {
 			Gdx.app.log("Contact", "Usain collided with the left wall");
