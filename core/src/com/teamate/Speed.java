@@ -2,12 +2,12 @@ package com.teamate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -19,7 +19,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 
 public class Speed extends ApplicationAdapter implements InputProcessor, ContactListener {
 	
-	public static final boolean DEBUG_PHYSICS = true;
+	public static final boolean DEBUG_PHYSICS = false;
 	
 	public static final short PHYSICS_CATEGORY_LEFT_WALL = 1;
 	public static final short PHYSICS_CATEGORY_GROUND = 2;
@@ -31,6 +31,8 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	public static final float WORLD_GRAVITY = -25;
 	
 	public static final float USAIN_X = WORLD_WIDTH / 3;
+	
+	public static float gameSpeed = 1f;
 	
 	boolean usainCollidingWithObstacle = false;
 	
@@ -53,7 +55,8 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		// Music starts to play here. Import different sounds for background track.
 		// DONT use this for in game sounds. Music is strictly for music and very
 		// resource intensive.
-		Music music = Gdx.audio.newMusic(Gdx.files.internal("loop.wav"));
+		Music music = Gdx.audio.newMusic(Gdx.files.internal("main.wav"));
+		music.setVolume(0.5f);
 		music.play();
 		music.setLooping(true);
 	
@@ -64,15 +67,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		usain.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_OBSTACLE | PHYSICS_CATEGORY_LEFT_WALL));
 		
 		gameWorld.addSprite(usain);
-		
-		// Add a block
-		PhysicsSprite block = new PhysicsSprite("box.png", gameWorld.getWorld());
-		block.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
-		block.setPosition(3 * WORLD_WIDTH / 4, WORLD_HEIGHT / 12 + block.getHeight() / 2);
-		block.setFilterCategory(PHYSICS_CATEGORY_OBSTACLE);
-		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
-		obstacles.add(block);
-		gameWorld.addSprite(block);
 		
 		// Add the left "wall"
 		BodyDef leftDef = new BodyDef();
@@ -95,7 +89,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		
 		FixtureDef groundFixDef = new FixtureDef();
 		EdgeShape groundShape = new EdgeShape();
-		groundShape.set(0, WORLD_HEIGHT / 12, WORLD_WIDTH, WORLD_HEIGHT / 12);
+		groundShape.set(0, WORLD_HEIGHT / 12, WORLD_WIDTH * 2, WORLD_HEIGHT / 12);
 		groundFixDef.shape = groundShape;
 		groundFixDef.filter.categoryBits = PHYSICS_CATEGORY_GROUND;
 		groundFixDef.filter.maskBits = PHYSICS_CATEGORY_USAIN | PHYSICS_CATEGORY_OBSTACLE;
@@ -106,8 +100,14 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	@Override
 	public void render() {
 		
+		if (new Random().nextFloat() < 0.005f) {
+			addBlock();
+		}
+		
+		gameSpeed += 0.001f;
+		
 		for (PhysicsSprite obstacle : obstacles) {
-			obstacle.applyImpulse(new Vector2(-0.05f, 0));
+			obstacle.setLinearVelocity(-2.9f * gameSpeed, obstacle.getBody().getLinearVelocity().y);
 		}
 		
 		if (!usainCollidingWithObstacle) {
@@ -127,6 +127,17 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	@Override
 	public void resize(int width, int height) {
 		gameWorld.resize(width, height);
+	}
+	
+	public void addBlock() {
+		// Add a block
+		PhysicsSprite block = new PhysicsSprite("box.png", gameWorld.getWorld());
+		block.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
+		block.setPosition(WORLD_WIDTH + block.getWidth(), WORLD_HEIGHT / 12 + block.getHeight());
+		block.setFilterCategory(PHYSICS_CATEGORY_OBSTACLE);
+		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
+		obstacles.add(block);
+		gameWorld.addSprite(block);
 	}
 	
 	// ----------------------------------------

@@ -29,8 +29,7 @@ public class GameWorld {
 	
 	private List<PhysicsSprite> sprites = new ArrayList<PhysicsSprite>();
 	
-	private Sprite wall;
-	private Sprite movingFloor;
+	private Sprite background;
 	private float scrollTimer = 0;
 	
 	public GameWorld() {
@@ -44,16 +43,9 @@ public class GameWorld {
 		
 		Texture wallTex = new Texture("wall.png");
 		wallTex.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-		wall = new Sprite(wallTex);
-		wall.setSize(Speed.WORLD_WIDTH + 2, Speed.WORLD_HEIGHT);
-		wall.setPosition(0, 0);
-		
-		// TODO: Once combined, get rid of this block.
-		Texture floorTex = new Texture("floor.png");
-		floorTex.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-		movingFloor = new Sprite(floorTex);
-		movingFloor.setSize(Speed.WORLD_WIDTH, Speed.WORLD_HEIGHT / 6);
-		movingFloor.setPosition(0, 0);
+		background = new Sprite(wallTex);
+		background.setSize(Speed.WORLD_WIDTH + 2, Speed.WORLD_HEIGHT);
+		background.setPosition(0, 0);
 	}
 	
 	public void addSprite(PhysicsSprite sprite) {
@@ -78,14 +70,12 @@ public class GameWorld {
 			sprite.update();
 		}
 		
-		scrollTimer += 0.0047f;	// More time = faster scroll
+		scrollTimer += 0.0047f * Speed.gameSpeed;	// More time = faster scroll
 		if (scrollTimer > 1f) {
 			scrollTimer = 0f;
 		}
-		wall.setU(scrollTimer);
-		movingFloor.setU(scrollTimer);
-		wall.setU2(scrollTimer + 1);
-		movingFloor.setU2(scrollTimer + 1);
+		background.setU(scrollTimer);
+		background.setU2(scrollTimer + 1);
 	}
 	
 	public void render() {
@@ -95,8 +85,7 @@ public class GameWorld {
 		batch.setProjectionMatrix(viewport.getCamera().combined);
 		
 		batch.begin();
-		wall.draw(batch);
-		movingFloor.draw(batch);
+		background.draw(batch);
 		for (PhysicsSprite sprite : sprites) {
 			sprite.draw(batch);
 		}
