@@ -41,18 +41,14 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	GameWorld gameWorld;
 
 	Usain usain;
-	PhysicsSprite ground;
-	Texture texture;
-	Texture texture2; // TODO: Get rid of once combo of floor+wall
-	Sprite wall;
-	Sprite movingFloor; // TODO: Get rid of once combo of floor+wall
+	
+	Body ground;
 	Body leftWall;
-	float scrollTimer = 0;
 	
 	Boolean flag = true;
-	Sound jumpsound;
-	Sound landsound;
-	Sound main;
+//	Sound jumpsound;
+//	Sound landsound;
+//	Sound main;
 	
 	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
 	
@@ -61,44 +57,14 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		
 		gameWorld = new GameWorld();
 
-		jumpsound =  Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
-		landsound =  Gdx.audio.newSound(Gdx.files.internal("land.wav"));
-		main =  Gdx.audio.newSound(Gdx.files.internal("main.wav"));
-		music();
-
-		
-		ground = new PhysicsSprite("floor.png", gameWorld.getWorld());
-		ground.setSize(WORLD_WIDTH, WORLD_HEIGHT / 6);
-		ground.setPosition(WORLD_WIDTH / 2, ground.getHeight() / 2);
-		ground.setBodyType(BodyType.StaticBody);
-		ground.setFriction(0);
-		EdgeShape edgeShape = new EdgeShape();
-		edgeShape.set(-ground.getWidth() / 2, 0, ground.getWidth() / 2, 0);
-		ground.setShape(edgeShape);
-		ground.setFilterCategory(PHYSICS_CATEGORY_GROUND);
-		ground.setFilterCollisionMask((short) (PHYSICS_CATEGORY_USAIN | PHYSICS_CATEGORY_OBSTACLE));
-
-		gameWorld.addSprite(ground);
-		
-		// TODO: Combine the floor texture and the wall texture to create one congruent
-		// scrolling picture. Will be better for performance and be easier to deal with
-		// scrolling. @Michael should be able to photoshop floor and wall together quick.
-		texture = new Texture("wall.png");
-		texture.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-		wall = new Sprite(texture);
-		wall.setSize(WORLD_WIDTH + 2, WORLD_HEIGHT);
-		wall.setPosition(0, 0);
-		
-		// TODO: Once combined, get rid of this block. 
-		texture2 = new Texture("floor.png"); 
-		texture2.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
-		movingFloor = new Sprite(texture2);
-		movingFloor.setSize(WORLD_WIDTH, WORLD_HEIGHT / 6);
-		movingFloor.setPosition(0, 0);
+//		jumpsound =  Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
+//		landsound =  Gdx.audio.newSound(Gdx.files.internal("land.wav"));
+//		main =  Gdx.audio.newSound(Gdx.files.internal("main.wav"));
+//		music();
 	
 		usain = new Usain("sprite_robot1.png", gameWorld.getWorld());
 		usain.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
-		usain.setPosition(USAIN_X + usain.getWidth() / 2, ground.getHeight() / 2 + usain.getHeight() / 2);
+		usain.setPosition(USAIN_X + usain.getWidth() / 2, WORLD_HEIGHT / 12 + usain.getHeight() / 2);
 		usain.setFilterCategory(PHYSICS_CATEGORY_USAIN);
 		usain.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_OBSTACLE | PHYSICS_CATEGORY_LEFT_WALL));
 		
@@ -107,7 +73,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		// Add a block
 		PhysicsSprite block = new PhysicsSprite("box.png", gameWorld.getWorld());
 		block.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
-		block.setPosition(3 * WORLD_WIDTH / 4, ground.getHeight() / 2 + block.getHeight() / 2);
+		block.setPosition(3 * WORLD_WIDTH / 4, WORLD_HEIGHT / 12 + block.getHeight() / 2);
 		block.setFilterCategory(PHYSICS_CATEGORY_OBSTACLE);
 		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
 		obstacles.add(block);
@@ -127,6 +93,19 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		
 		Gdx.input.setInputProcessor(this);
 		gameWorld.getWorld().setContactListener(this);
+		
+		// Add the ground line
+		BodyDef groundDef = new BodyDef();
+		groundDef.type = BodyDef.BodyType.StaticBody;
+		
+		FixtureDef groundFixDef = new FixtureDef();
+		EdgeShape groundShape = new EdgeShape();
+		groundShape.set(0, WORLD_HEIGHT / 12, WORLD_WIDTH, WORLD_HEIGHT / 12);
+		groundFixDef.shape = groundShape;
+		groundFixDef.filter.categoryBits = PHYSICS_CATEGORY_GROUND;
+		groundFixDef.filter.maskBits = PHYSICS_CATEGORY_USAIN | PHYSICS_CATEGORY_OBSTACLE;
+		
+		ground = gameWorld.addBody(groundDef, groundFixDef);
 	}
 	
 	public void music(){
@@ -135,7 +114,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		} catch(InterruptedException ex) {
 		    Thread.currentThread().interrupt();
 		}
-		main.loop();
+//		main.loop();
 	}
 
 	@Override
@@ -154,18 +133,8 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		}
 		
 		gameWorld.update();
-		gameWorld.render();
 		
-		gameWorld.getBatch().begin();
-		scrollTimer += 0.0047f;  // More time = faster scroll
-		if (scrollTimer > 1.0f) scrollTimer = 0.0f; // Reset the timer so we scroll again
-		wall.setU(scrollTimer); // Set up the next scroll rotation for the background.
-		movingFloor.setU(scrollTimer); // TODO: Get rid of once combo of floor+wall
-		wall.setU2(scrollTimer+1); // Set up the next scroll rotation for the background.
-		movingFloor.setU2(scrollTimer); // TODO: Get rid of once combo of floor+wall
-		wall.draw(gameWorld.getBatch()); // Finally draw the wall. 
-		movingFloor.draw(gameWorld.getBatch()); // Finally draw the ground. 
-		gameWorld.getBatch().end();
+		gameWorld.render();
 	}
 	
 	@Override
@@ -198,7 +167,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if(flag == true){
-		jumpsound.play();
+//		jumpsound.play();
 		}
 		usain.jump();
 		flag = false;
@@ -239,7 +208,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Body b = contact.getFixtureB().getBody();
 		
 		if (usain.isJumping() && (a == usain.getBody() || b == usain.getBody())) {
-			landsound.play();
+//			landsound.play();
 			flag = true;
 			usain.notifyLanded();
 		} else if (a == usain.getBody() && b == leftWall || a == leftWall && b == usain.getBody()) {
