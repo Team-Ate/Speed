@@ -50,8 +50,18 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	Body leftWall;
 	float scrollTimer = 0;
 	
+	Boolean flag = true;
+	Sound jumpsound;
+	Sound landsound;
+	Sound main;
+	
 	@Override
 	public void create() {
+		
+		jumpsound =  Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
+		landsound =  Gdx.audio.newSound(Gdx.files.internal("land.wav"));
+		main =  Gdx.audio.newSound(Gdx.files.internal("main.wav"));
+		music();
 		
 		camera = new OrthographicCamera();
 		viewport = new FillViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
@@ -106,6 +116,15 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		
 		Gdx.input.setInputProcessor(this);
 		world.setContactListener(this);
+	}
+	
+	public void music(){
+		try {
+		    Thread.sleep(10000);                 
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		main.loop();
 	}
 
 	@Override
@@ -166,7 +185,11 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		if(flag == true){
+		jumpsound.play();
+		}
 		usain.jump();
+		flag = false;
 		return true;
 	}
 
@@ -204,6 +227,8 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		Body b = contact.getFixtureB().getBody();
 		
 		if (usain.isJumping() && (a == usain.getBody() || b == usain.getBody())) {
+			landsound.play();
+			flag = true;
 			usain.notifyLanded();
 		} else if (a == usain.getBody() && b == leftWall || a == leftWall && b == usain.getBody()) {
 			Gdx.app.log("Contact", "Usain collided with the left wall");
