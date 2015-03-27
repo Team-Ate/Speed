@@ -50,6 +50,9 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	@Override
 	public void create() {
 		
+		// Resets it after you quit the app
+		gameSpeed = 1f;
+		
 		gameWorld = new GameWorld();
 		
 		// Music starts to play here. Import different sounds for background track.
@@ -100,7 +103,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	@Override
 	public void render() {
 		
-		if (new Random().nextFloat() < 0.005f) {
+		if (new Random().nextFloat() < 0.005f * gameSpeed) {
 			addBlock();
 		}
 		
