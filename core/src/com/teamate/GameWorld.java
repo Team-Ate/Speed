@@ -95,9 +95,8 @@ public class GameWorld {
 			sprite.draw(batch);
 		}
 		
-		scoreString = "Score: " + Speed.totScore + "";
+		scoreString = "Score: " + String.format("%.0f", Speed.totScore);
 		Speed.font.draw(batch, scoreString, .2f, 4.4f);
-		
 		batch.end();
 		
 		if (Speed.DEBUG_PHYSICS) {

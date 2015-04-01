@@ -46,7 +46,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	Usain usain;
 	Body ground;
 	Body leftWall;
-	public static int totScore;
+	public static float totScore;
 
 	
 	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
@@ -119,7 +119,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		}
 		
 		gameSpeed += 0.001f;
-		totScore += .005;
+		totScore += .05;
 		
 		for (PhysicsSprite obstacle : obstacles) {
 			obstacle.setLinearVelocity(-2.9f * gameSpeed, obstacle.getBody().getLinearVelocity().y);
