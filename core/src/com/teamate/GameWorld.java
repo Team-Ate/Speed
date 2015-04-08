@@ -47,7 +47,7 @@ public class GameWorld {
 		Texture wallTex = new Texture("wall.png");
 		wallTex.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
 		background = new Sprite(wallTex);
-		background.setSize(Speed.WORLD_WIDTH + 2, Speed.WORLD_HEIGHT);
+		background.setSize(Speed.WORLD_WIDTH, Speed.WORLD_HEIGHT);
 		background.setPosition(0, 0);
 	}
 	
@@ -73,7 +73,7 @@ public class GameWorld {
 			sprite.update();
 		}
 		
-		scrollTimer += 0.0047f * Speed.gameSpeed;	// More time = faster scroll
+		scrollTimer += 0.006f * Speed.gameSpeed;	// More time = faster scroll
 		if (scrollTimer > 1f) {
 			scrollTimer = 0f;
 		}
