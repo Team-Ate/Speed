@@ -136,7 +136,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		// Add a block
 		PhysicsSprite block = new PhysicsSprite("box.png", gameWorld.getWorld());
 		block.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
-		block.setPosition(WORLD_WIDTH + block.getWidth(), WORLD_HEIGHT / 12 + block.getHeight());
+		block.setPosition(WORLD_WIDTH * 1.5f, WORLD_HEIGHT / 12 + block.getHeight());
 		block.setFilterCategory(PHYSICS_CATEGORY_OBSTACLE);
 		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
 		obstacles.add(block);
