@@ -8,6 +8,9 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -36,16 +39,17 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	
 	boolean usainCollidingWithObstacle = false;
 	
-	GameWorld gameWorld;
-
-	Usain usain;
+	public static BitmapFont font; // Will be used for displaying score
+	// public static BitmapFontCache fontCache; // Look into this for more efficient updating. 
 	
+	GameWorld gameWorld;
+	Usain usain;
 	Body ground;
 	Body leftWall;
+	public static float totScore;
+
 	
 	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
-	
-	int totScore;
 	
 	@Override
 	public void create() {
@@ -53,6 +57,13 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		// Resets it after you quit the app
 		gameSpeed = 1f;
 		
+		// General score setup. 
+		totScore = 0;
+		font = new BitmapFont();
+		font.setScale(.01f); // May need to become more modular to adjust to display size.
+		font.setColor(Color.BLACK);
+		font.setUseIntegerPositions(false); // Fixes font scaling issues with small screen.
+   
 		gameWorld = new GameWorld();
 		
 		// Music starts to play here. Import different sounds for background track.
@@ -108,6 +119,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		}
 		
 		gameSpeed += 0.001f;
+		totScore += .05;
 		
 		for (PhysicsSprite obstacle : obstacles) {
 			obstacle.setLinearVelocity(-2.9f * gameSpeed, obstacle.getBody().getLinearVelocity().y);
@@ -123,8 +135,6 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		
 		gameWorld.update();
 		gameWorld.render();
-
-		totScore++;
 	}
 	
 	@Override

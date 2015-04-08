@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -31,6 +33,7 @@ public class GameWorld {
 	
 	private Sprite background;
 	private float scrollTimer = 0;
+	private String scoreString;
 	
 	public GameWorld() {
 		viewport = new FillViewport(Speed.WORLD_WIDTH, Speed.WORLD_HEIGHT);
@@ -74,6 +77,7 @@ public class GameWorld {
 		if (scrollTimer > 1f) {
 			scrollTimer = 0f;
 		}
+		
 		background.setU(scrollTimer);
 		background.setU2(scrollTimer + 1);
 	}
@@ -86,9 +90,13 @@ public class GameWorld {
 		
 		batch.begin();
 		background.draw(batch);
+		
 		for (PhysicsSprite sprite : sprites) {
 			sprite.draw(batch);
 		}
+		
+		scoreString = "Score: " + String.format("%.0f", Speed.totScore);
+		Speed.font.draw(batch, scoreString, .2f, 4.4f);
 		batch.end();
 		
 		if (Speed.DEBUG_PHYSICS) {
