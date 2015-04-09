@@ -28,6 +28,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	public static final short PHYSICS_CATEGORY_GROUND = 2;
 	public static final short PHYSICS_CATEGORY_USAIN = 4;
 	public static final short PHYSICS_CATEGORY_OBSTACLE = 8;
+	public static final short PHYSICS_CATEGORY_ITEM = 16;
 	
 	public static final float WORLD_WIDTH = 8; // m
 	public static final float WORLD_HEIGHT = 4.5f; // m
@@ -38,6 +39,8 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 	public static float gameSpeed = 1f;
 	
 	boolean usainCollidingWithObstacle = false;
+	boolean usainCollidingWithItem = false;
+	PhysicsSprite itemUsainCollidedWith = null;
 	
 	public static BitmapFont font; // Will be used for displaying score
 	// public static BitmapFontCache fontCache; // Look into this for more efficient updating. 
@@ -50,6 +53,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 
 	
 	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
+	List<PhysicsSprite> items = new ArrayList<PhysicsSprite>();
 	
 	@Override
 	public void create() {
@@ -78,7 +82,7 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		usain.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
 		usain.setPosition(USAIN_X + usain.getWidth() / 2, WORLD_HEIGHT / 12 + usain.getHeight() / 2);
 		usain.setFilterCategory(PHYSICS_CATEGORY_USAIN);
-		usain.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_OBSTACLE | PHYSICS_CATEGORY_LEFT_WALL));
+		usain.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_OBSTACLE | PHYSICS_CATEGORY_LEFT_WALL | PHYSICS_CATEGORY_ITEM));
 		
 		gameWorld.addSprite(usain);
 		
@@ -118,11 +122,30 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 			addBlock();
 		}
 		
-		gameSpeed += 0.001f;
-		totScore += .05;
+		if (new Random().nextFloat() < 0.005f * gameSpeed) {
+			addItem();
+		}
+		
+		if (usainCollidingWithItem) {
+			
+			// Remove the item Usain collided with
+			gameWorld.removeSprite(itemUsainCollidedWith);
+			items.remove(itemUsainCollidedWith);
+			itemUsainCollidedWith = null;
+			usainCollidingWithItem = false;
+			
+			// Increase scrolling speed
+			gameSpeed += 0.1f;
+		}
+		
+		totScore += gameSpeed / 6f;
 		
 		for (PhysicsSprite obstacle : obstacles) {
 			obstacle.setLinearVelocity(-2.9f * gameSpeed, obstacle.getBody().getLinearVelocity().y);
+		}
+		
+		for (PhysicsSprite item : items) {
+			item.setLinearVelocity(-2.9f * gameSpeed, item.getBody().getLinearVelocity().y);
 		}
 		
 		if (!usainCollidingWithObstacle) {
@@ -151,6 +174,18 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
 		obstacles.add(block);
 		gameWorld.addSprite(block);
+	}
+	
+	public void addItem() {
+		// Add an item
+		PhysicsSprite item = new PhysicsSprite("item.png", gameWorld.getWorld());
+		item.setSize(WORLD_WIDTH / 46.5f, WORLD_WIDTH / 16);
+		item.setPosition(WORLD_WIDTH * 1.5f, WORLD_HEIGHT / 12 + item.getHeight() + (new Random().nextFloat()) * (WORLD_HEIGHT - item.getHeight()));
+		item.setFilterCategory(PHYSICS_CATEGORY_ITEM);
+		item.setFilterCollisionMask((short) (PHYSICS_CATEGORY_USAIN));
+		item.setGravityScale(0);
+		items.add(item);
+		gameWorld.addSprite(item);
 	}
 	
 	// ----------------------------------------
@@ -227,10 +262,24 @@ public class Speed extends ApplicationAdapter implements InputProcessor, Contact
 					usainCollidingWithObstacle = true;
 				}
 			}
+			
+			for (PhysicsSprite item : items) {
+				if (b == item.getBody()) {
+					itemUsainCollidedWith = item;
+					usainCollidingWithItem = true;
+				}
+			}
 		} else if (b == usain.getBody()) {
 			for (PhysicsSprite obstacle : obstacles) {
 				if (a == obstacle.getBody()) {
 					usainCollidingWithObstacle = true;
+				}
+			}
+			
+			for (PhysicsSprite item : items) {
+				if (a == item.getBody()) {
+					itemUsainCollidedWith = item;
+					usainCollidingWithItem = true;
 				}
 			}
 		}

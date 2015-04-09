@@ -129,6 +129,10 @@ public class PhysicsSprite extends Sprite {
 		body.setLinearVelocity(x, y);
 	}
 	
+	public void setGravityScale(float scale) {
+		body.setGravityScale(scale);
+	}
+	
 	// ----------------------------------------
 	// Wrapper methods for FixtureDef
 	// ----------------------------------------
