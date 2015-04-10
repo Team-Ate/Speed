@@ -39,14 +39,14 @@ public class MainMenuScreen implements Screen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		camera.update();
-		game.batch.setProjectionMatrix(camera.combined);
+		SpeedGame.batch.setProjectionMatrix(camera.combined);
 		
-		game.batch.begin();
-		game.font.draw(game.batch, "SPEED", 100, 150);
-		game.font.draw(game.batch, "Tap Anywhere to Begin", 100, 100);
-		game.batch.end();
+		SpeedGame.batch.begin();
+		SpeedGame.font.draw(SpeedGame.batch, "SPEED", 100, 150);
+		SpeedGame.font.draw(SpeedGame.batch, "Tap Anywhere to Begin", 100, 100);
+		SpeedGame.batch.end();
 		
-		if (Gdx.input.isTouched()){
+		if (Gdx.input.isTouched()) {
 			optionSelectionSound.play();
 			introLoop.stop();
 			game.setScreen(new GameScreen(game));

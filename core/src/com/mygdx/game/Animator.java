@@ -1,7 +1,6 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,7 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * HOW TO SPRITE
  *
  */
-public class Animator{
+public class Animator {
 	
 	private static final int        FRAME_COLS = 6;
     private static final int        FRAME_ROWS = 5;

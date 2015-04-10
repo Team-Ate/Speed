@@ -5,13 +5,14 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.mygdx.game.GameScreen;
 
 public class Usain extends PhysicsSprite {
 	
 	private boolean jumping = false;
 	private int animFrame = 0;
 	private int updateCount = 0;
-	private static final int ANIM_RATE = (int) (8 * Speed.gameSpeed);
+	private static final int ANIM_RATE = (int) (8 * GameScreen.gameSpeed);
 	
 	private Sound jumpSound;
 	private Sound landSound;

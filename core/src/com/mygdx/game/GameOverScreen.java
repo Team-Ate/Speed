@@ -19,7 +19,7 @@ public class GameOverScreen implements Screen{
 	float scrollTimer;
 	
 	
-	public GameOverScreen(final SpeedGame speed){
+	public GameOverScreen(final SpeedGame speed) {
 		game = speed;
 		
 		background = new Texture(Gdx.files.internal("wall.png"));
@@ -30,7 +30,7 @@ public class GameOverScreen implements Screen{
 		//wrap background
 		background.setWrap(TextureWrap.Repeat, TextureWrap.Repeat);
 		wrappingBackground = new Sprite(background);
-		wrappingBackground.setSize(1600, 480);
+		wrappingBackground.setSize(854, 480);
 		wrappingBackground.setPosition(0, 0);
 	}
 
@@ -46,7 +46,7 @@ public class GameOverScreen implements Screen{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		camera.update();
-		game.batch.setProjectionMatrix(camera.combined);
+		SpeedGame.batch.setProjectionMatrix(camera.combined);
 		
 		scrollTimer += 0.0047f;
 		if (scrollTimer > 1f) {
@@ -55,10 +55,10 @@ public class GameOverScreen implements Screen{
 		wrappingBackground.setU(scrollTimer);
 		wrappingBackground.setU2(scrollTimer + 1);
 		
-		game.batch.begin();
-		wrappingBackground.draw(game.batch);
-		game.font.draw(game.batch, "You Suck", 350, 180);
-		game.batch.end();
+		SpeedGame.batch.begin();
+		wrappingBackground.draw(SpeedGame.batch);
+		SpeedGame.font.draw(SpeedGame.batch, "You Suck", 350, 180);
+		SpeedGame.batch.end();
 		
 		processInput();
 		
