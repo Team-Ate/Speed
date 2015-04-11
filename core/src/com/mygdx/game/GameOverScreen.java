@@ -1,12 +1,15 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Vector3;
 
 public class GameOverScreen implements Screen{
 	
@@ -16,6 +19,8 @@ public class GameOverScreen implements Screen{
 	Texture background;
 	Sprite wrappingBackground;
 	
+	Music music;
+	
 	float scrollTimer;
 	
 	
@@ -23,6 +28,9 @@ public class GameOverScreen implements Screen{
 		game = speed;
 		
 		background = new Texture(Gdx.files.internal("wall.png"));
+		music = Gdx.audio.newMusic(Gdx.files.internal("game over.wav"));
+		music.setVolume(0.5f);
+		music.setLooping(true);
 		
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 800, 480);
@@ -36,7 +44,8 @@ public class GameOverScreen implements Screen{
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
+		
+		music.play();
 		
 	}
 
@@ -46,7 +55,7 @@ public class GameOverScreen implements Screen{
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		camera.update();
-		SpeedGame.batch.setProjectionMatrix(camera.combined);
+		game.batch.setProjectionMatrix(camera.combined);
 		
 		scrollTimer += 0.0047f;
 		if (scrollTimer > 1f) {
@@ -55,20 +64,26 @@ public class GameOverScreen implements Screen{
 		wrappingBackground.setU(scrollTimer);
 		wrappingBackground.setU2(scrollTimer + 1);
 		
-		SpeedGame.batch.begin();
-		wrappingBackground.draw(SpeedGame.batch);
-		SpeedGame.font.draw(SpeedGame.batch, "You Suck", 350, 180);
-		SpeedGame.batch.end();
+		game.batch.begin();
+		wrappingBackground.draw(game.batch);
+		game.font.draw(game.batch, "Touch to Play Again", 350, 180);
+		game.batch.end();
 		
 		processInput();
 		
 	}
 	
 	public void processInput(){
-		if (Gdx.input.isTouched()){
-			game.setScreen(new MainMenuScreen(game));
-			dispose();
-		}
+		if (Gdx.input.isTouched()) {
+            game.setScreen(new MainMenuScreen(game));
+            dispose();
+        }
+		/**
+        if (Gdx.input.isKeyPressed(Keys.LEFT))
+            game.setScreen(new GameScreen(game));
+        if (Gdx.input.isKeyPressed(Keys.RIGHT))
+            Gdx.app.exit();
+            */
 	}
 
 	@Override
@@ -97,7 +112,8 @@ public class GameOverScreen implements Screen{
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
+		music.stop();
+		music.dispose();
 		
 	}
 }
