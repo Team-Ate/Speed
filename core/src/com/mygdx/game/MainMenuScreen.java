@@ -7,6 +7,12 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 
+/**
+ * Represents the main menu of the game (prior to actual gameplay).
+ * 
+ * @author TeamAte
+ *
+ */
 public class MainMenuScreen implements Screen {
 	
 	final SpeedGame game;
@@ -15,6 +21,12 @@ public class MainMenuScreen implements Screen {
 	Music introLoop;
 	Sound optionSelectionSound;
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param speed
+	 * 			The game for which this is the menu screen.
+	 */
 	public MainMenuScreen(final SpeedGame speed){
 		game = speed;
 		
@@ -25,14 +37,23 @@ public class MainMenuScreen implements Screen {
 		camera.setToOrtho(false, 800, 480);
 		
 	}
-
+	
+	/**
+	 * Begins the entry sequence.
+	 */
 	@Override
 	public void show() {
 		introLoop.setLooping(true);
 		introLoop.play();
 
 	}
-
+	
+	/**
+	 * Displays the menu onscreen.
+	 * 
+	 * @param delta
+	 * 			Unused parameter
+	 */
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0.2f, 1);

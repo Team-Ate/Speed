@@ -26,7 +26,9 @@ public class Animator {
 	float stateTime;
 	
 	
-
+	/**
+	 * Initializes the Animator.
+	 */
 	public void create() {
 		walkSheet = new Texture(Gdx.files.internal("sprite-animation4.png"));
 		TextureRegion[][] tmp = TextureRegion.split(walkSheet, walkSheet.getWidth()/FRAME_COLS, walkSheet.getHeight()/FRAME_ROWS);
@@ -49,7 +51,10 @@ public class Animator {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
+	/**
+	 * Displays the animator onscreen
+	 */
 	public void render() {
 		//Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);                        
         stateTime += Gdx.graphics.getDeltaTime();         

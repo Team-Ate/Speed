@@ -22,6 +22,12 @@ import com.teamate.GameWorld;
 import com.teamate.PhysicsSprite;
 import com.teamate.Usain;
 
+/**
+ * Controls the entirety of gameplay.
+ * 
+ * @author TeamAte
+ *
+ */
 public class GameScreen implements Screen, InputProcessor, ContactListener {
 
 	public static final boolean DEBUG_PHYSICS = false;
@@ -55,7 +61,13 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 
 	List<PhysicsSprite> obstacles = new ArrayList<PhysicsSprite>();
 	List<PhysicsSprite> items = new ArrayList<PhysicsSprite>();
-
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param speed
+	 * 			The game to be played.
+	 */
 	public GameScreen(final SpeedGame speed) {
 		
 		this.game = speed;
@@ -117,23 +129,35 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 		ground = gameWorld.addBody(groundDef, groundFixDef);
 
 	}
-
+	
+	/**
+	 * Method stub.
+	 */
 	@Override
 	public void show() {
 		
 	}
-
+	
+	/**
+	 * Updates the game for a new frame and displays it onscreen.
+	 * 
+	 * @param delta
+	 * 			Unused parameter.
+	 */
 	@Override
 	public void render(float delta) {
-
+		
+		// Occasionally generate a new obstacle
 		if (new Random().nextFloat() < 0.005f * gameSpeed) {
 			addBlock();
 		}
-
+		
+		// Occasionally generate a new battery
 		if (new Random().nextFloat() < 0.005f * gameSpeed) {
 			addItem();
 		}
-
+		
+		// Handle item pickup
 		if (usainCollidingWithItem) {
 
 			// Remove the item Usain collided with
@@ -145,17 +169,21 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 			// Increase scrolling speed
 			gameSpeed += 0.5f;
 		}
-
+		
+		// Increase score at a rate proportional of the square of the game speed
 		totScore += Math.pow(gameSpeed, 2) / 6f;
-
+		
+		// Set the obstacles' velocity
 		for (PhysicsSprite obstacle : obstacles) {
 			obstacle.setLinearVelocity(-2.9f * gameSpeed, obstacle.getBody().getLinearVelocity().y);
 		}
-
+		
+		// Set the items' velocity
 		for (PhysicsSprite item : items) {
 			item.setLinearVelocity(-2.9f * gameSpeed, item.getBody().getLinearVelocity().y);
 		}
-
+		
+		// Handle Usain running into an obstacle
 		if (!usainCollidingWithObstacle) {
 			if (usain.getX() < USAIN_X - 0.05f) {
 				usain.setLinearVelocity(1, usain.getBody().getLinearVelocity().y);
@@ -163,35 +191,54 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 				usain.setLinearVelocity(0, usain.getBody().getLinearVelocity().y);
 			}
 		}
-
+		
 		gameWorld.update();
 		gameWorld.render();
 
 	}
-
+	
+	/**
+	 * Creates a new obstacle just outside the right edge of the screen.
+	 */
 	public void addBlock() {
-		// Add a block
+		
+		// Set up the block's physical characteristics
 		PhysicsSprite block = new PhysicsSprite("box.png", gameWorld.getWorld());
 		block.setSize(WORLD_WIDTH / 8, WORLD_WIDTH / 8);
 		block.setPosition(WORLD_WIDTH * 1.5f, WORLD_HEIGHT / 12 + block.getHeight());
 		block.setFilterCategory(PHYSICS_CATEGORY_OBSTACLE);
 		block.setFilterCollisionMask((short) (PHYSICS_CATEGORY_GROUND | PHYSICS_CATEGORY_USAIN));
+		
+		// Add the block to the world it belongs to
 		obstacles.add(block);
 		gameWorld.addSprite(block);
 	}
-
+	
+	/**
+	 * Creates a new item at a random height just outside the right edge of the screen
+	 */
 	public void addItem() {
-		// Add an item
+		// Set up the item's physical characteristics
 		PhysicsSprite item = new PhysicsSprite("item.png", gameWorld.getWorld());
 		item.setSize(WORLD_WIDTH / 46.5f, WORLD_WIDTH / 16);
 		item.setPosition(WORLD_WIDTH * 1.5f, WORLD_HEIGHT / 12 + item.getHeight() + (new Random().nextFloat()) * (WORLD_HEIGHT - item.getHeight()));
 		item.setFilterCategory(PHYSICS_CATEGORY_ITEM);
 		item.setFilterCollisionMask((short) (PHYSICS_CATEGORY_USAIN));
 		item.setGravityScale(0);
+		
+		// Add the item to the world it belongs to
 		items.add(item);
 		gameWorld.addSprite(item);
 	}
-
+	
+	/**
+	 * Resize the game window
+	 * 
+	 * @param width
+	 * 			The new width of the game (in pixels)
+	 * @param height
+	 * 			The new height of the game (in pixels)
+	 */
 	@Override
 	public void resize(int width, int height) {
 		gameWorld.resize(width, height);
@@ -243,7 +290,20 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
+	/**
+	 * Handles the only input for the game - the user touching the screen
+	 * 
+	 * @param screenX
+	 * 			Unused parameter
+	 * @param screenY
+	 * 			Unused parameter
+	 * @param pointer
+	 * 			Unused parameter
+	 * @param button
+	 * 			Unused parameter
+	 * @return True
+	 */
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		usain.jump();
@@ -277,7 +337,13 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 	// ----------------------------------------
 	// ContactListener
 	// ----------------------------------------
-
+	
+	/**
+	 * Handle collisions of any kind.
+	 * 
+	 * @param contact
+	 * 			The collision that just occurred
+	 */
 	@Override
 	public void beginContact(Contact contact) {
 		Body a = contact.getFixtureA().getBody();
@@ -319,7 +385,13 @@ public class GameScreen implements Screen, InputProcessor, ContactListener {
 			}
 		}
 	} 
-
+	
+	/**
+	 * Handle the end of any collision.
+	 * 
+	 * @param contact
+	 * 			The collision that just ended
+	 */
 	@Override
 	public void endContact(Contact contact) {
 		Body a = contact.getFixtureA().getBody();

@@ -19,6 +19,13 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.GameScreen;
 import com.mygdx.game.SpeedGame;
 
+/**
+ * 
+ * @author TeamAte
+ * 
+ * Represents the world in which the game takes place.
+ *
+ */
 public class GameWorld {
 	
 	private Viewport viewport;
@@ -32,6 +39,9 @@ public class GameWorld {
 	private float scrollTimer = 0;
 	private String scoreString;
 	
+	/**
+	 * Constructor.
+	 */
 	public GameWorld() {
 		viewport = new FillViewport(GameScreen.WORLD_WIDTH, GameScreen.WORLD_HEIGHT);
 		viewport.apply(true);
@@ -47,20 +57,44 @@ public class GameWorld {
 		background.setPosition(0, 0);
 	}
 	
+	/**
+	 * Adds a PhysicsSprite to track and update.
+	 * 
+	 * @param sprite
+	 * 			The PhysicsSprite to add to the world.
+	 */
 	public void addSprite(PhysicsSprite sprite) {
 		sprites.add(sprite);
 	}
 	
+	/**
+	 * Removes a PhysicsSprite that currently exists in the world.
+	 * 
+	 * @param sprite
+	 * 			The PhysicsSprite to remove from the world.
+	 */
 	public void removeSprite(PhysicsSprite sprite) {
 		sprites.remove(sprite);
 	}
 	
+	/**
+	 * Creates a Body in the world.
+	 * 
+	 * @param bodydef
+	 * 			The definition of the new Body
+	 * @param fixturedef
+	 * 			The definition of the Body's Fixture
+	 * @return The newly created Body
+	 */
 	public Body addBody(BodyDef bodydef, FixtureDef fixturedef) {
 		Body body = world.createBody(bodydef);
 		body.createFixture(fixturedef);
 		return body;
 	}
 	
+	/**
+	 * Updates the world and all of its PhysicsSprites for another frame.
+	 */
 	public void update() {
 		viewport.getCamera().update();
 		world.step(1/60f, 6, 2);
@@ -78,6 +112,9 @@ public class GameWorld {
 		background.setU2(scrollTimer + 1);
 	}
 	
+	/**
+	 * Displays the world on screen.
+	 */
 	public void render() {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -100,10 +137,23 @@ public class GameWorld {
 		}
 	}
 	
+	/**
+	 * Resizes the world.
+	 * 
+	 * @param width
+	 * 			The new height of the world.
+	 * @param height
+	 * 			The new width of the world.
+	 */
 	public void resize(int width, int height) {
 		viewport.update(width, height, true);
 	}
 	
+	/**
+	 * Returns the world's World object.
+	 * 
+	 * @return The world's World object
+	 */
 	public World getWorld() {
 		return world;
 	}

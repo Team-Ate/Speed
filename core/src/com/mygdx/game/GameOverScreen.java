@@ -8,6 +8,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureWrap;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
+/**
+ * Represent the screen telling the user that the game is over.
+ * 
+ * @author TeamAte
+ *
+ */
 public class GameOverScreen implements Screen{
 	
 	final SpeedGame game;
@@ -18,7 +24,12 @@ public class GameOverScreen implements Screen{
 	
 	float scrollTimer;
 	
-	
+	/**
+	 * Constructor.
+	 * 
+	 * @param speed
+	 * 			The game that just ended.
+	 */
 	public GameOverScreen(final SpeedGame speed) {
 		game = speed;
 		
@@ -33,13 +44,19 @@ public class GameOverScreen implements Screen{
 		wrappingBackground.setSize(854, 480);
 		wrappingBackground.setPosition(0, 0);
 	}
-
+	
 	@Override
 	public void show() {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
+	/**
+	 * Displays on screen.
+	 * 
+	 * @param delta
+	 * 			Unused parameter
+	 */
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0.2f, 0, 0, 1);
@@ -64,6 +81,9 @@ public class GameOverScreen implements Screen{
 		
 	}
 	
+	/**
+	 * Go back to main menu if the screen is touched.
+	 */
 	public void processInput(){
 		if (Gdx.input.isTouched()){
 			game.setScreen(new MainMenuScreen(game));
